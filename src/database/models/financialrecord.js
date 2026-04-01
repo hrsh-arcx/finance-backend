@@ -11,6 +11,10 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      FinancialRecord.belongsTo(models.User,{
+        foreignKey: 'createdBy',
+        as: 'records'
+      })
     }
   }
   FinancialRecord.init({

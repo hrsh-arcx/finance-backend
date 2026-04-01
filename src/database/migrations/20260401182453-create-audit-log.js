@@ -10,19 +10,30 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       userId: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'Users',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'RESTRICT'
       },
       action: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull : false,
       },
       entityType: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull : false,
       },
       entityId: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull : false,
       },
       metadata: {
-        type: Sequelize.TEXT
+        type: Sequelize.TEXT,
+        allowNull : true
       },
       createdAt: {
         allowNull: false,

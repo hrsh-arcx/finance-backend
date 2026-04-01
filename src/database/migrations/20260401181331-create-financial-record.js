@@ -10,25 +10,42 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       amount: {
-        type: Sequelize.DECIMAL
+        type: Sequelize.DECIMAL(12, 2),
+        allowNull: false,
+        validate: {
+          min: 0.01
+        }
       },
       type: {
-        type: Sequelize.STRING
+        type: Sequelize.ENUM('INCOME', 'EXPENSE'),
+        allowNull: false
       },
       category: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        allowNull : false,
       },
       date: {
-        type: Sequelize.DATEONLY
+        type: Sequelize.DATEONLY,
+        allowNull : false,
       },
       notes: {
-        type: Sequelize.TEXT
+        type: Sequelize.TEXT,
+        allowNull : true
       },
       createdBy: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull : false,
+        references: {
+            model: 'Users',
+            key: 'id'
+          },
+          onUpdate: 'CASCADE',
+          onDelete: 'RESTRICT'
       },
       isDeleted: {
-        type: Sequelize.BOOLEAN
+        type: Sequelize.BOOLEAN,
+        allowNull : false,
+        defaultValue : false
       },
       createdAt: {
         allowNull: false,
