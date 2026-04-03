@@ -3,7 +3,7 @@ const cors = require('cors');
 const morgan = require('morgan');
 const errorMiddleware = require('./middlewares/errorMiddleware');
 const {StatusCodes} = require('http-status-codes')
-const authRoutes = require('./modules/auth/authRoutes')
+const apiRouter = require('./routes')
 
 const app = express();
 
@@ -18,7 +18,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-app.use('/api/v1/auth',authRoutes);
+app.use('/api',apiRouter);
 app.use(errorMiddleware);
 
 module.exports = app;

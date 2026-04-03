@@ -13,6 +13,4 @@ const loginValidator = [
     .trim()
 ];
 
-module.exports = {
-  loginValidator
-};
+module.exports = loginValidator;
