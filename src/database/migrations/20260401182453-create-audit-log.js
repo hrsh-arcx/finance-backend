@@ -20,24 +20,28 @@ module.exports = {
         onDelete: 'RESTRICT'
       },
       action: {
-        type: Sequelize.STRING,
+        type: Sequelize.ENUM('CREATE', 'UPDATE', 'DELETE', 'LOGIN'),
         allowNull : false,
       },
-      entityType: {
+      entity: {
         type: Sequelize.STRING,
         allowNull : false,
       },
       entityId: {
         type: Sequelize.INTEGER,
-        allowNull : false,
+        allowNull : true,
       },
-      metadata: {
-        type: Sequelize.TEXT,
-        allowNull : true
+      oldValues: {
+        type: Sequelize.JSON,
+        allowNull: true,
+      },
+      newValues: {
+        type: Sequelize.JSON,
+        allowNull: true,
       },
       createdAt: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       updatedAt: {
         allowNull: false,

@@ -7,7 +7,7 @@ const {userService} = require('../services');
 // ─── Controllers ─────────────────────────────────────────────────────────────
 
 const create = catchAsync(async (req, res) => {
-  const user = await userService.createUser(req.body);
+  const user = await userService.createUser(req.body, req.user.id);
   return res
     .status(StatusCodes.CREATED)
     .json(new ApiResponse(StatusCodes.CREATED, 'User created successfully', user));
@@ -28,14 +28,14 @@ const getOne = catchAsync(async (req, res) => {
 });
 
 const updateRole = catchAsync(async (req, res) => {
-  const user = await userService.updateUserRole(req.params.id, req.body.role);
+  const user = await userService.updateUserRole(req.params.id, req.body.role,req.user.id);
   return res
     .status(StatusCodes.OK)
     .json(new ApiResponse(StatusCodes.OK, 'User role updated successfully', user));
 });
 
 const updateStatus = catchAsync(async (req, res) => {
-  const user = await userService.updateUserStatus(req.params.id, req.body.status);
+  const user = await userService.updateUserStatus(req.params.id, req.body.status,req.user.id);
   return res
     .status(StatusCodes.OK)
     .json(new ApiResponse(StatusCodes.OK, 'User status updated successfully', user));

@@ -1,13 +1,12 @@
-const bcrypt  = require('bcrypt');
-const jwt     = require('jsonwebtoken');
-
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const createAuditLog = require('../utils/auditLogger')
 const ApiError = require('../utils/ApiError');
 const { USER_STATUS } = require('../utils/enums');
 const { StatusCodes } = require('http-status-codes');
 const {authRepository} = require('../repositories');
 
 //Helpers
-
 function generateToken(user) {
   return jwt.sign(
     { id: user.id, role: user.role, status: user.status },
@@ -22,7 +21,6 @@ function formatUser(user) {
 }
 
 //Service
-
 async function loginUser(email, password) {
   const user = await authRepository.findUserByEmail(email);
 
@@ -39,6 +37,15 @@ async function loginUser(email, password) {
   if (user.status !== USER_STATUS.ACTIVE) {
     throw new ApiError(StatusCodes.FORBIDDEN, 'Your account is inactive. Please contact admin');
   }
+
+  await createAuditLog({
+    userId: user.id,
+    action: 'LOGIN',
+    entity: 'User',
+    entityId: user.id,
+    oldValues: null,
+    newValues: null,
+  });
 
   return {
     token : generateToken(user),

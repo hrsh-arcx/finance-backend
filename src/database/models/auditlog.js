@@ -20,25 +20,29 @@ module.exports = (sequelize, DataTypes) => {
   AuditLog.init({
     userId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
     },
     action: {
-      type: DataTypes.STRING,
-      allowNull: false
+      type: DataTypes.ENUM('CREATE', 'UPDATE', 'DELETE','LOGIN'),
+      allowNull: false,
     },
-    entityType: {
+    entity: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     entityId: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: true,
     },
-    metadata: {
-      type: DataTypes.TEXT,
-      allowNull: true
-    }
-  }, {
+    oldValues: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
+    newValues: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
+  },{
     sequelize,
     modelName: 'AuditLog',
   });

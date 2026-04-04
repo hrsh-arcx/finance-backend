@@ -1,9 +1,9 @@
 const { StatusCodes } = require('http-status-codes');
 const ApiError = require('../utils/ApiError');
 const recordRepository = require('../repositories/recordRepository');
+const createAuditLog = require('../utils/auditLogger')
 
 //Helper
-
 async function findRecordOrFail(id) {
   const record = await recordRepository.findRecordById(id);
   if (!record) {
@@ -13,9 +13,17 @@ async function findRecordOrFail(id) {
 }
 
 //Service
-
 async function createRecord(data, userId) {
-  return recordRepository.createRecord({ ...data, createdBy: userId });
+  const record = await recordRepository.createRecord({ ...data, createdBy: userId });
+  await createAuditLog({
+    userId,
+    action: 'CREATE',
+    entity: 'FinancialRecord',
+    entityId: record.id,
+    oldValues: null,
+    newValues: record.toJSON(),
+  });
+  return record;
 }
 
 async function getAllRecords(query) {
@@ -26,7 +34,7 @@ async function getRecordById(id) {
   return findRecordOrFail(id);
 }
 
-async function updateRecordById(id, data) {
+async function updateRecordById(id, data, userId) {
   const record = await findRecordOrFail(id);
   const hasChanges = Object.keys(data).some(
     key => String(record[key]) !== String(data[key])
@@ -34,12 +42,34 @@ async function updateRecordById(id, data) {
   if (!hasChanges) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'No changes detected');
   }
-  return recordRepository.updateRecord(record, data);
+  const oldValues = record.toJSON();
+  const updated = await recordRepository.updateRecord(record, data);
+
+  await createAuditLog({
+    userId,
+    action: 'UPDATE',
+    entity: 'FinancialRecord',
+    entityId: record.id,
+    oldValues,
+    newValues: updated.toJSON(),
+  });
+
+  return updated;
 }
 
-async function deleteRecordById(id) {
+async function deleteRecordById(id, userId) {
   const record = await findRecordOrFail(id);
-  return recordRepository.softDeleteRecord(record);
+  const oldValues = record.toJSON();
+  await recordRepository.softDeleteRecord(record);
+
+  await createAuditLog({
+    userId,
+    action: 'DELETE',
+    entity: 'FinancialRecord',
+    entityId: record.id,
+    oldValues,
+    newValues: null,
+  });
 }
 
 module.exports = {

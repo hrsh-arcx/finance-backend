@@ -34,7 +34,7 @@ const getOne = catchAsync(async (req, res) => {
 });
 
 const update = catchAsync(async (req, res) => {
-  const record = await recordService.updateRecordById(req.params.id, req.body);
+  const record = await recordService.updateRecordById(req.params.id, req.body, req.user.id);
 
   return res
     .status(StatusCodes.OK)
@@ -42,7 +42,7 @@ const update = catchAsync(async (req, res) => {
 });
 
 const remove = catchAsync(async (req, res) => {
-  await recordService.deleteRecordById(req.params.id);
+  await recordService.deleteRecordById(req.params.id, req.user.id);
 
   return res
     .status(StatusCodes.OK)
