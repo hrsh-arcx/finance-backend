@@ -10,4 +10,7 @@ router.use('/users',userRoute);
 const recordRoute = require('./recordRoutes');
 router.use('/records',recordRoute);
 
+const dashboardRoute = require('./dashboardRoutes');
+router.use('/dashboard',dashboardRoute);
+
 module.exports = router;
