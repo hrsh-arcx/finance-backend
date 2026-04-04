@@ -1,7 +1,7 @@
 const bcrypt  = require('bcrypt');
 const jwt     = require('jsonwebtoken');
 
-const ApiError        = require('../utils/ApiError');
+const ApiError = require('../utils/ApiError');
 const { USER_STATUS } = require('../utils/enums');
 const { StatusCodes } = require('http-status-codes');
 const {authRepository} = require('../repositories');
