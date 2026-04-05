@@ -225,13 +225,13 @@ npm install
 PORT=
 NODE_ENV=development
 
-DB_HOST=
-DB_USER=
+DB_HOST=localhost
+DB_USER=root
 DB_PASSWORD=
-DB_NAME=
+DB_NAME=finance_backend
 
 JWT_SECRET=
-JWT_EXPIRES_IN=
+JWT_EXPIRES_IN=1d
 ```
 
 ### 4. Create the database
