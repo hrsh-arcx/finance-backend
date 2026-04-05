@@ -1,7 +1,7 @@
 const { StatusCodes } = require('http-status-codes');
 
-const ApiResponse      = require('../utils/ApiResponse');
-const catchAsync       = require('../utils/catchAsync');
+const ApiResponse = require('../utils/ApiResponse');
+const catchAsync = require('../utils/catchAsync');
 const {dashboardService} = require('../services');
 
 const summary = catchAsync(async (req, res) => {

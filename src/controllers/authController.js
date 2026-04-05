@@ -1,10 +1,8 @@
 const { StatusCodes } = require('http-status-codes');
 
-const ApiResponse       = require('../utils/ApiResponse');
-const catchAsync        = require('../utils/catchAsync');
+const ApiResponse = require('../utils/ApiResponse');
+const catchAsync = require('../utils/catchAsync');
 const {authService} = require('../services');
-
-// ─── Controllers ─────────────────────────────────────────────────────────────
 
 const login = catchAsync(async (req, res) => {
   const { email, password } = req.body;

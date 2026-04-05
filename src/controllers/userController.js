@@ -1,10 +1,8 @@
 const { StatusCodes } = require('http-status-codes');
 
-const ApiResponse  = require('../utils/ApiResponse');
-const catchAsync   = require('../utils/catchAsync');
+const ApiResponse = require('../utils/ApiResponse');
+const catchAsync = require('../utils/catchAsync');
 const {userService} = require('../services');
-
-// ─── Controllers ─────────────────────────────────────────────────────────────
 
 const create = catchAsync(async (req, res) => {
   const user = await userService.createUser(req.body, req.user.id);

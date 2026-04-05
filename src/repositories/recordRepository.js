@@ -4,8 +4,8 @@ const db = require('../database/models');
 const ALLOWED_SORT_FIELDS = ['date', 'amount', 'category', 'createdAt'];
 const USER_ATTRIBUTES = ['id', 'name', 'email', 'role'];
 const includeCreator = {
-  model      : db.User,
-  as         : 'records',
+  model : db.User,
+  as : 'records',
   attributes : USER_ATTRIBUTES,
 };
 

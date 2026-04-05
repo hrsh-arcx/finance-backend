@@ -11,6 +11,24 @@ async function findRecordOrFail(id) {
   }
   return record;
 }
+function isDifferent(oldVal, newVal) {
+
+  if (oldVal == null && newVal == null) return false;
+  if (oldVal == null || newVal == null) return true;
+
+  if (oldVal instanceof Date || (typeof oldVal === 'string' && !isNaN(Date.parse(oldVal)))) {
+    const oldDate = new Date(oldVal).toLocaleDateString('en-CA');
+    const newDate = new Date(newVal).toLocaleDateString('en-CA');
+    return oldDate !== newDate;
+  }
+
+  if (!isNaN(oldVal) && !isNaN(newVal)) {
+    return Number(oldVal) !== Number(newVal);
+  }
+
+  return String(oldVal).trim() !== String(newVal).trim();
+}
+
 
 //Service
 async function createRecord(data, userId) {
@@ -37,7 +55,7 @@ async function getRecordById(id) {
 async function updateRecordById(id, data, userId) {
   const record = await findRecordOrFail(id);
   const hasChanges = Object.keys(data).some(
-    key => String(record[key]) !== String(data[key])
+    key => isDifferent(record[key],data[key])
   );
   if (!hasChanges) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'No changes detected');
