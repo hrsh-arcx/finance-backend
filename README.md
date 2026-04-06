@@ -258,6 +258,10 @@ Server runs at `http://localhost:PORT`
 
 ---
 
+### Swagger Documentation
+Full API collection with descriptions, request bodies, responses:
+[Swagger Documentation](http://localhost:4000/api-docs/)
+
 ### Postman Collection
 Full API collection with descriptions, request bodies, and example responses:
 [View Postman Documentation](https://documenter.getpostman.com/view/52380998/2sBXiqFUh5#7d922b80-5b9d-4fa3-a5a4-dc5b27a33fc4)
