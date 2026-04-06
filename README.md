@@ -258,6 +258,10 @@ Server runs at `http://localhost:PORT`
 
 ---
 
+### Postman Collection
+Full API collection with descriptions, request bodies, and example responses:
+[View Postman Documentation](https://documenter.getpostman.com/view/52380998/2sBXiqFUh5#7d922b80-5b9d-4fa3-a5a4-dc5b27a33fc4)
+
 ## 🔑 Sample Credentials
 
 After running seeds:
@@ -280,6 +284,19 @@ After running seeds:
 5. GET  /api/v1/records?type=INCOME&page=1  → filter records (analyst/admin)
 6. GET  /api/v1/dashboard/summary  → view aggregated totals (all roles)
 ```
+## 🏛️ Technical Decisions
+
+### Framework & Runtime
+Node.js with Express was chosen for its non-blocking I/O model which suits an API handling concurrent requests efficiently. Express keeps the setup minimal and gives full control over middleware ordering and error handling.
+
+### Database & ORM
+MySQL was chosen over NoSQL because financial data is inherently relational — users own records, records reference creators, audit logs reference users. Sequelize ORM provides model-level validation, associations, and migration support. `DECIMAL(10,2)` was used for financial amounts instead of `FLOAT` to avoid floating-point precision errors which are unacceptable in financial systems.
+
+### Architecture
+A strict four-layer architecture was followed — Routes, Controllers, Services, and Repositories. Controllers only handle HTTP concerns, Services contain all business logic, and Repositories isolate all database queries. This means business logic is independently testable and the database layer can be swapped without touching services.
+
+### Authentication
+JWT was chosen over session-based auth because it is stateless — the server does not store session data. This makes the system horizontally scalable. Tokens carry the user ID and role so most requests do not need a database hit for identity verification.
 
 ---
 
@@ -318,6 +335,7 @@ Financial amounts use MySQL `DECIMAL` type to avoid floating-point precision err
 Dashboard analytics use Sequelize aggregate functions (`SUM`, `COUNT`, `DATE_FORMAT`) with `GROUP BY` rather than fetching all records and computing in JavaScript. This keeps analytics performant as data grows.
 
 ---
+
 
 ## ⚠️ Assumptions
 
