@@ -1,0 +1,1211 @@
+openapi: 3.0.0
+
+info:
+  title: Finance Data Processing API
+  version: 1.0.0
+  description: |
+    Backend API for managing financial records with **role-based access control (RBAC)**, **dashboard analytics**, and **audit logging**.
+
+    ## Roles
+    - **ADMIN** — full access to users, records, and dashboard
+    - **ANALYST** — read access to records and full dashboard
+    - **VIEWER** — access to summary and recent activity only
+
+    ## Authentication
+    All protected routes require a Bearer token in the `Authorization` header.
+
+    ```
+    Authorization: Bearer <your_token>
+    ```
+
+    Login via `POST /auth/login` to receive your token, then click **Authorize** above and paste it in.
+
+servers:
+  - url: http://localhost:4000/api/v1
+    description: Local development server
+
+tags:
+  - name: Auth
+    description: Authentication and session management
+  - name: Users
+    description: User management — Admin only
+  - name: Records
+    description: Financial record operations
+  - name: Dashboard
+    description: Analytics and aggregated insights
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+
+    # ─── Auth ─────────────────────────────────────────────────────────────────
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: admin@example.com
+        password:
+          type: string
+          format: password
+          example: Admin@123
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        user:
+          $ref: '#/components/schemas/User'
+
+    # ─── Users ────────────────────────────────────────────────────────────────
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Harsh Goel
+        email:
+          type: string
+          example: admin@example.com
+        role:
+          type: string
+          enum: [ADMIN, ANALYST, VIEWER]
+          example: ADMIN
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE]
+          example: ACTIVE
+
+    CreateUserRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+          example: Virat Sharma
+        email:
+          type: string
+          format: email
+          example: analyst@zorvyn.com
+        password:
+          type: string
+          format: password
+          example: Analyst@123
+        role:
+          type: string
+          enum: [ADMIN, ANALYST, VIEWER]
+          example: ANALYST
+
+    UpdateRoleRequest:
+      type: object
+      required: [role]
+      properties:
+        role:
+          type: string
+          enum: [ADMIN, ANALYST, VIEWER]
+          example: VIEWER
+
+    UpdateStatusRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE]
+          example: INACTIVE
+
+    # ─── Records ──────────────────────────────────────────────────────────────
+
+    Record:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        amount:
+          type: number
+          format: float
+          example: 85000.00
+        type:
+          type: string
+          enum: [INCOME, EXPENSE]
+          example: INCOME
+        category:
+          type: string
+          example: Salary
+        date:
+          type: string
+          format: date
+          example: 2026-01-15
+        notes:
+          type: string
+          example: Monthly salary - January
+        isDeleted:
+          type: boolean
+          example: false
+        createdBy:
+          type: integer
+          example: 1
+        creator:
+          $ref: '#/components/schemas/User'
+
+    CreateRecordRequest:
+      type: object
+      required: [amount, type, category, date]
+      properties:
+        amount:
+          type: number
+          format: float
+          minimum: 0.01
+          example: 5000.00
+        type:
+          type: string
+          enum: [INCOME, EXPENSE]
+          example: EXPENSE
+        category:
+          type: string
+          minLength: 2
+          maxLength: 50
+          example: Marketing
+        date:
+          type: string
+          format: date
+          example: 2026-03-15
+        notes:
+          type: string
+          maxLength: 500
+          example: Social media
+
+    UpdateRecordRequest:
+      type: object
+      properties:
+        amount:
+          type: number
+          format: float
+          minimum: 0.01
+          example: 6000.00
+        type:
+          type: string
+          enum: [INCOME, EXPENSE]
+          example: EXPENSE
+        category:
+          type: string
+          minLength: 2
+          maxLength: 50
+          example: Travel
+        date:
+          type: string
+          format: date
+          example: 2026-03-20
+        notes:
+          type: string
+          maxLength: 500
+          example: Updated travel expenses
+
+    PaginatedRecords:
+      type: object
+      properties:
+        records:
+          type: array
+          items:
+            $ref: '#/components/schemas/Record'
+        total:
+          type: integer
+          example: 50
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 10
+        totalPages:
+          type: integer
+          example: 5
+
+    # ─── Dashboard ────────────────────────────────────────────────────────────
+
+    Summary:
+      type: object
+      properties:
+        totalIncome:
+          type: number
+          example: 225000.00
+        totalExpenses:
+          type: number
+          example: 21500.50
+        netBalance:
+          type: number
+          example: 203499.50
+
+    CategoryBreakdown:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [INCOME, EXPENSE]
+          example: EXPENSE
+        category:
+          type: string
+          example: Rent
+        total:
+          type: number
+          example: 3600.00
+
+    MonthlyTrend:
+      type: object
+      properties:
+        month:
+          type: string
+          example: 2026-01
+        income:
+          type: number
+          example: 110000.00
+        expense:
+          type: number
+          example: 5850.50
+
+    # ─── Common ───────────────────────────────────────────────────────────────
+
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+
+  # ─── Reusable Responses ───────────────────────────────────────────────────
+
+  responses:
+
+    TokenMissing:
+      description: Access token is missing or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: Access token is missing or invalid
+            errors: []
+
+    TokenInvalid:
+      description: Invalid or expired token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: Invalid or expired token
+            errors: []
+
+    TokenUserGone:
+      description: User associated with token no longer exists
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: User associated with token no longer exists
+            errors: []
+
+    AccountInactive:
+      description: User account is inactive
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: Your account is inactive. Please contact admin
+            errors: []
+
+    Forbidden:
+      description: Insufficient role permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: You do not have permission to perform this action
+            errors: []
+
+    UserNotFound:
+      description: User not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: User not found
+            errors: []
+
+    RecordNotFound:
+      description: Financial record not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: Financial record not found
+            errors: []
+
+    ValidationError:
+      description: Validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: Validation failed
+            errors:
+              - field: amount
+                message: Amount must be at least 0.01
+
+paths:
+
+  # ─── Auth ───────────────────────────────────────────────────────────────────
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login and receive JWT token
+      description: Authenticates user with email and password. Returns a JWT token to be used in subsequent requests.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/LoginResponse'
+              example:
+                success: true
+                message: Login successful
+                data:
+                  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  user:
+                    id: 1
+                    name: Harsh Goel
+                    email: admin@example.com
+                    role: ADMIN
+                    status: ACTIVE
+        '401':
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: Invalid email or password
+                errors: []
+        '403':
+          description: Account is inactive
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: Your account is inactive. Please contact admin
+                errors: []
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get currently authenticated user
+      description: Returns the profile of the user associated with the provided JWT token.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user fetched successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+              example:
+                success: true
+                message: Current user fetched successfully
+                data:
+                  id: 1
+                  name: Harsh Goel
+                  email: admin@example.com
+                  role: ADMIN
+                  status: ACTIVE
+        '401':
+          $ref: '#/components/responses/TokenMissing'
+
+  # ─── Users ──────────────────────────────────────────────────────────────────
+
+  /users:
+    post:
+      tags: [Users]
+      summary: Create a new user
+      description: Admin only. Creates a new user with the specified role. Default role is VIEWER if not provided.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+              example:
+                success: true
+                message: User created successfully
+                data:
+                  id: 2
+                  name: Riya Sharma
+                  email: analyst@example.com
+                  role: ANALYST
+                  status: ACTIVE
+        '401':
+          $ref: '#/components/responses/TokenMissing'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: User with this email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: User with this email already exists
+                errors: []
+
+    get:
+      tags: [Users]
+      summary: Get all users
+      description: Admin only. Returns a list of all users in the system.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Users fetched successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/User'
+              example:
+                success: true
+                message: Users fetched successfully
+                data:
+                  - id: 1
+                    name: Harsh Goel
+                    email: admin@example.com
+                    role: ADMIN
+                    status: ACTIVE
+                  - id: 2
+                    name: Riya Sharma
+                    email: analyst@example.com
+                    role: ANALYST
+                    status: ACTIVE
+        '401':
+          $ref: '#/components/responses/TokenMissing'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /users/{id}:
+    get:
+      tags: [Users]
+      summary: Get user by ID
+      description: Admin only. Returns a single user by their ID.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: User fetched successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+              example:
+                success: true
+                message: User fetched successfully
+                data:
+                  id: 1
+                  name: Harsh Goel
+                  email: admin@example.com
+                  role: ADMIN
+                  status: ACTIVE
+        '401':
+          $ref: '#/components/responses/TokenMissing'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/UserNotFound'
+
+  /users/{id}/role:
+    patch:
+      tags: [Users]
+      summary: Update user role
+      description: Admin only. Updates the role of a specific user.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRoleRequest'
+      responses:
+        '200':
+          description: User role updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+              example:
+                success: true
+                message: User role updated successfully
+                data:
+                  id: 2
+                  name: Riya Sharma
+                  email: analyst@example.com
+                  role: VIEWER
+                  status: ACTIVE
+        '400':
+          description: The user already has the same role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: The user already has the same role
+                errors: []
+        '401':
+          $ref: '#/components/responses/TokenMissing'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/UserNotFound'
+
+  /users/{id}/status:
+    patch:
+      tags: [Users]
+      summary: Update user status
+      description: Admin only. Activates or deactivates a user account.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStatusRequest'
+      responses:
+        '200':
+          description: User status updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+              example:
+                success: true
+                message: User status updated successfully
+                data:
+                  id: 2
+                  name: Riya Sharma
+                  email: analyst@example.com
+                  role: ANALYST
+                  status: INACTIVE
+        '400':
+          description: The user already has the same status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: The user already has the same status
+                errors: []
+        '401':
+          $ref: '#/components/responses/TokenMissing'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/UserNotFound'
+
+  # ─── Records ────────────────────────────────────────────────────────────────
+
+  /records:
+    post:
+      tags: [Records]
+      summary: Create a financial record
+      description: Admin only. Creates a new financial record linked to the authenticated user.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRecordRequest'
+      responses:
+        '201':
+          description: Financial record created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Record'
+              example:
+                success: true
+                message: Financial record created successfully
+                data:
+                  id: 1
+                  amount: 5000.00
+                  type: EXPENSE
+                  category: Marketing
+                  date: 2026-03-15
+                  notes: Social media ad campaign
+                  isDeleted: false
+                  createdBy: 1
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/TokenMissing'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    get:
+      tags: [Records]
+      summary: Get all financial records
+      description: |
+        Analyst and Admin only.
+        Supports filtering by type, category, and date range.
+        Supports full-text search across notes and category.
+        Supports pagination and sorting.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: type
+          description: Filter by record type
+          schema:
+            type: string
+            enum: [INCOME, EXPENSE]
+        - in: query
+          name: category
+          description: Filter by category (exact match)
+          schema:
+            type: string
+          example: Salary
+        - in: query
+          name: startDate
+          description: Filter records from this date (inclusive)
+          schema:
+            type: string
+            format: date
+          example: 2026-01-01
+        - in: query
+          name: endDate
+          description: Filter records up to this date (inclusive)
+          schema:
+            type: string
+            format: date
+          example: 2026-03-31
+        - in: query
+          name: search
+          description: Search across notes and category fields
+          schema:
+            type: string
+          example: salary
+        - in: query
+          name: page
+          description: Page number
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - in: query
+          name: limit
+          description: Records per page
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+        - in: query
+          name: sortBy
+          description: Field to sort by
+          schema:
+            type: string
+            enum: [date, amount, category, createdAt]
+            default: date
+        - in: query
+          name: sortOrder
+          description: Sort direction
+          schema:
+            type: string
+            enum: [ASC, DESC]
+            default: DESC
+      responses:
+        '200':
+          description: Financial records fetched successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PaginatedRecords'
+              example:
+                success: true
+                message: Financial records fetched successfully
+                data:
+                  records:
+                    - id: 1
+                      amount: 85000.00
+                      type: INCOME
+                      category: Salary
+                      date: 2026-01-15
+                      notes: Monthly salary - January
+                      isDeleted: false
+                      createdBy: 1
+                  total: 15
+                  page: 1
+                  limit: 10
+                  totalPages: 2
+        '401':
+          $ref: '#/components/responses/TokenMissing'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /records/{id}:
+    get:
+      tags: [Records]
+      summary: Get a financial record by ID
+      description: Analyst and Admin only. Returns a single financial record with creator details.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: Financial record fetched successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Record'
+              example:
+                success: true
+                message: Financial record fetched successfully
+                data:
+                  id: 1
+                  amount: 85000.00
+                  type: INCOME
+                  category: Salary
+                  date: 2026-01-15
+                  notes: Monthly salary - January
+                  isDeleted: false
+                  createdBy: 1
+                  creator:
+                    id: 1
+                    name: Harsh Goel
+                    email: admin@example.com
+                    role: ADMIN
+                    status: ACTIVE
+        '401':
+          $ref: '#/components/responses/TokenMissing'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/RecordNotFound'
+
+    patch:
+      tags: [Records]
+      summary: Update a financial record
+      description: |
+        Admin only.
+        At least one field must be provided.
+        Submitted values must differ from existing record — no changes detected returns 400.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRecordRequest'
+      responses:
+        '200':
+          description: Financial record updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Record'
+              example:
+                success: true
+                message: Financial record updated successfully
+                data:
+                  id: 1
+                  amount: 6000.00
+                  type: EXPENSE
+                  category: Travel
+                  date: 2026-03-20
+                  notes: Updated travel expenses
+                  isDeleted: false
+                  createdBy: 1
+        '400':
+          description: Validation failed or no changes detected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                message: No changes detected
+                errors: []
+        '401':
+          $ref: '#/components/responses/TokenMissing'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/RecordNotFound'
+
+    delete:
+      tags: [Records]
+      summary: Soft delete a financial record
+      description: Admin only. Sets isDeleted to true. Record is preserved in the database for audit purposes.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: Financial record deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                success: true
+                message: Financial record deleted successfully
+                data: null
+        '401':
+          $ref: '#/components/responses/TokenMissing'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/RecordNotFound'
+
+  # ─── Dashboard ──────────────────────────────────────────────────────────────
+
+  /dashboard/summary:
+    get:
+      tags: [Dashboard]
+      summary: Get total income, expenses and net balance
+      description: All roles. Optionally filter by date range using startDate and endDate.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: startDate
+          description: Start of date range (inclusive)
+          schema:
+            type: string
+            format: date
+          example: 2026-01-01
+        - in: query
+          name: endDate
+          description: End of date range (inclusive)
+          schema:
+            type: string
+            format: date
+          example: 2026-03-31
+      responses:
+        '200':
+          description: Dashboard summary fetched successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Summary'
+              example:
+                success: true
+                message: Dashboard summary fetched successfully
+                data:
+                  totalIncome: 225000.00
+                  totalExpenses: 21500.50
+                  netBalance: 203499.50
+        '401':
+          $ref: '#/components/responses/TokenMissing'
+        '403':
+          $ref: '#/components/responses/AccountInactive'
+
+  /dashboard/category-breakdown:
+    get:
+      tags: [Dashboard]
+      summary: Get totals grouped by type and category
+      description: Returns aggregated totals per category ordered by highest total first.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Category breakdown fetched successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CategoryBreakdown'
+              example:
+                success: true
+                message: Category breakdown fetched successfully
+                data:
+                  - type: INCOME
+                    category: Salary
+                    total: 255000.00
+                  - type: EXPENSE
+                    category: Rent
+                    total: 3600.00
+                  - type: EXPENSE
+                    category: Utilities
+                    total: 1100.50
+        '401':
+          $ref: '#/components/responses/TokenMissing'
+        '403':
+          $ref: '#/components/responses/AccountInactive'
+
+  /dashboard/recent-activity:
+    get:
+      tags: [Dashboard]
+      summary: Get most recent financial records
+      description: Creator details are hidden for Viewer role. Default limit is 5.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: limit
+          description: Number of recent records to return
+          schema:
+            type: integer
+            default: 5
+            minimum: 1
+          example: 5
+      responses:
+        '200':
+          description: Recent activity fetched successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Record'
+              example:
+                success: true
+                message: Recent activity fetched successfully
+                data:
+                  - id: 15
+                    amount: 2100.00
+                    type: EXPENSE
+                    category: Software
+                    date: 2026-03-18
+                    notes: New tool subscriptions
+                    isDeleted: false
+                    createdBy: 1
+        '401':
+          $ref: '#/components/responses/TokenMissing'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+
+  /dashboard/trends:
+    get:
+      tags: [Dashboard]
+      summary: Get monthly income vs expense trends
+      description: Returns aggregated income and expense totals per month in ascending order.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Monthly trends fetched successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/MonthlyTrend'
+              example:
+                success: true
+                message: Monthly trends fetched successfully
+                data:
+                  - month: 2026-01
+                    income: 110000.00
+                    expense: 5850.50
+                  - month: 2026-02
+                    income: 100000.00
+                    expense: 10350.00
+                  - month: 2026-03
+                    income: 117000.00
+                    expense: 8300.00
+        '401':
+          $ref: '#/components/responses/TokenMissing'
+        '403':
+          $ref: '#/components/responses/AccountInactive'
